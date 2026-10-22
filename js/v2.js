@@ -104,6 +104,9 @@
     function showDigit(n,at){ later(function(){ var s=digit.firstElementChild; s.textContent=n;
       anims.push(s.animate([{clipPath:'inset(0 0 100% 0)'},{clipPath:'inset(0 0 0 0)'}],{duration:420,easing:'cubic-bezier(.2,.7,.2,1)',fill:'both'})); },at); }
     showDigit('3',0); showDigit('2',1000); showDigit('1',2000); showDigit('0',3000);
+    [].forEach.call(intro.querySelectorAll('.intro__card'), function(c,k){ var rot=(k%2?1:-1)*(4+Math.random()*5);
+      anims.push(c.animate([{transform:'translateY(-120%) rotate('+(-rot)+'deg)'},{transform:'translateY('+(vh+40)+'px) rotate('+rot+'deg)'}],
+        {duration:1700,delay:150+k*700,easing:'cubic-bezier(.45,.05,.55,.95)',fill:'both'})); });
     function runBurst(k,at,dur){ later(function(){ bursts[k].forEach(function(s,i){ anims.push(s.el.animate([{strokeDashoffset:s.L},{strokeDashoffset:0}],{duration:dur,delay:Math.random()*dur*.5,easing:'ease-out',fill:'forwards'})); }); },at); }
     var t0=3600; runBurst(0,t0,260); runBurst(1,t0+620,300); runBurst(2,t0+1280,420);
     var tWord=t0+1900;
@@ -125,21 +128,30 @@
     window.addEventListener('keydown', function(e){ if(e.key==='Escape') finish(); });
   }
 
-  /* reviews carousel */
-  var track=document.getElementById('track');
-  if(track){
-    var slides=[].slice.call(track.children), dots=document.getElementById('dots');
-    slides.forEach(function(s,i){ var b=document.createElement('button'); b.type='button'; b.setAttribute('aria-label','Отзыв '+(i+1));
+  /* carousels: photos and reviews */
+  [].forEach.call(document.querySelectorAll('[data-carousel]'), function(root){
+    var track=root.querySelector('.carousel__track'), slides=[].slice.call(track.children), dots=root.querySelector('[data-dots]');
+    var label=track.getAttribute('aria-label')==='Отзывы гостей'?'Отзыв ':'Фото ';
+    slides.forEach(function(s,i){ var b=document.createElement('button'); b.type='button'; b.setAttribute('aria-label',label+(i+1));
       b.addEventListener('click', function(){ go(i); }); dots.appendChild(b); });
     function cur(){ var x=track.scrollLeft, best=0, bd=1e9; slides.forEach(function(s,i){ var dd=Math.abs(s.offsetLeft-track.offsetLeft-x); if(dd<bd){bd=dd;best=i;} }); return best; }
-    function maxIdx(){ var per=Math.max(1,Math.round(track.clientWidth/slides[0].getBoundingClientRect().width)); return slides.length-per; }
+    function maxIdx(){ var per=Math.max(1,Math.round((track.clientWidth+20)/(slides[0].getBoundingClientRect().width+20))); return Math.max(0,slides.length-per); }
     function go(i){ i=Math.max(0,Math.min(i,maxIdx())); track.scrollTo({left:slides[i].offsetLeft-track.offsetLeft,behavior:reduce?'auto':'smooth'}); }
-    function mark(){ var c=Math.min(cur(),maxIdx()); [].forEach.call(dots.children,function(b,i){ b.setAttribute('aria-current', i===c?'true':'false'); b.hidden=i>maxIdx(); }); }
-    document.getElementById('prev').addEventListener('click', function(){ go(cur()-1); });
-    document.getElementById('next').addEventListener('click', function(){ go(cur()+1); });
+    function mark(){ var m=maxIdx(), c=Math.min(cur(),m); [].forEach.call(dots.children,function(b,i){ b.setAttribute('aria-current', i===c?'true':'false'); b.hidden=i>m; }); }
+    root.querySelector('[data-prev]').addEventListener('click', function(){ go(cur()-1); });
+    root.querySelector('[data-next]').addEventListener('click', function(){ go(cur()+1); });
     track.addEventListener('keydown', function(e){ if(e.key==='ArrowRight'){e.preventDefault();go(cur()+1);} if(e.key==='ArrowLeft'){e.preventDefault();go(cur()-1);} });
     track.addEventListener('scroll', function(){ window.requestAnimationFrame(mark); }, {passive:true});
     window.addEventListener('resize', mark); mark();
+  });
+
+  /* section shots open as a circle from the centre, then the clip is dropped */
+  var gal=document.getElementById('gallery');
+  if(gal && !reduce && 'IntersectionObserver' in window){
+    gal.classList.add('reveal');
+    var io=new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ io.disconnect(); gal.classList.add('revealed');
+      setTimeout(function(){ gal.classList.add('settled'); }, 1000); } }); }, {threshold:.15});
+    io.observe(gal);
   }
 
   /* map loads on click, opens on the place */

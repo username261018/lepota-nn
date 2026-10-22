@@ -95,6 +95,18 @@ address p{margin:0 0 8px}
 .map{position:relative;aspect-ratio:4/3;border-radius:18px;overflow:hidden;border:1px solid var(--line);background:var(--sand)}
 .map iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
 
+
+/* gallery: whole photos, 3:4, no cropping */
+.gallery{padding:0 0 80px}
+.gallery__grid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.gallery__item{margin:0;aspect-ratio:3/4;background:var(--sand);border-radius:14px;overflow:hidden}
+.gallery__item--big{grid-column:span 2;grid-row:span 2;aspect-ratio:auto}
+.gallery__img{width:100%;height:100%;object-fit:contain}
+@media (max-width:520px){
+  .gallery__grid{grid-template-columns:repeat(2,1fr);gap:8px}
+  .gallery__item--big{aspect-ratio:3/4}
+}
+
 @media (max-width:1100px){
   .sign__line{display:none}
   .nav{gap:16px}
@@ -123,6 +135,7 @@ address p{margin:0 0 8px}
   .hero__logo{max-width:140px}
   .lead{font-size:17px}
   .about,.services,.reviews,.contacts{padding:56px 0}
+  .gallery{padding:0 0 56px}
   .demo-strip{font-size:10px;gap:8px;padding:4px 6px;letter-spacing:.02em}
 }
 @media (max-width:360px){
